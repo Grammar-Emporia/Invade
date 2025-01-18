@@ -1,4 +1,5 @@
 How to Play:
+
   Movement: Use the W, A, S, D keys to move your spaceship up, left, down, and right.
   
   Shooting: Press the Enter key to fire lasers at the aliens.
