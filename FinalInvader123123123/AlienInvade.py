@@ -6,7 +6,7 @@ from git import Repo
 import json
 
 #obtain highscore from repo
-myRepo = "https://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@github.com/Grammar-Emporia/Grammar-Emporia.github.io"
+myRepo = "https://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@github.com/Grammar-Emporia/Grammar-Emporia.github.io"
 scriptDir = os.path.dirname(os.path.abspath(__file__))  #get current dir
 localPath = os.path.join(scriptDir, "repo")  #from that current dir point to /repo
 repo = Repo.clone_from(myRepo, localPath) if not os.path.exists(localPath) else Repo(localPath) #if path does not exist it is cloned from the repo, if it is it just uses the preexisting one
