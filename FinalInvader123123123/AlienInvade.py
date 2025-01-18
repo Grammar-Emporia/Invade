@@ -601,11 +601,6 @@ while running:
         
         restartScreen(score, currentScore, names)
 
-        with open(filePath, "r") as f: #opens current score in repo
-            currentScore = json.load(f) #looks like a list ex [200,100,20]
-            currentScore = sorted(currentScore, reverse=True)
-            currentScore = currentScore[0]
-
         for alien in aliens:
             alien.kill()
         #reset game
