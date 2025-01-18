@@ -1,4 +1,3 @@
-How to Play:
 
   Movement: Use the W, A, S, D keys to move your spaceship up, left, down, and right.
   
