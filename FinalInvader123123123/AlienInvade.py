@@ -19,6 +19,13 @@ def postScore(player_name, score):
     payload = {'player': player_name, 'score': score}
     resp = requests.post(f"{SERVER_URL}/score", json=payload)
 
+scoreboard = getWebserverScores()
+scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
+if scoreboardSorted:
+    currentScore = scoreboardSorted[0]['score']
+else:
+    currentScore = 0
+
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
@@ -569,12 +576,7 @@ num = random.randint(1,2)
 score = int(score)
 barrIsDead = False
 
-scoreboard = getWebserverScores()
-scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
-if scoreboardSorted:
-    currentScore = scoreboardSorted[0]['score']
-else:
-    currentScore = 0
+
 
 while running:
 
@@ -592,14 +594,6 @@ while running:
         scoreboard = getWebserverScores()
 
         restartScreen(score, scoreboard)
-
-        scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
-        if scoreboardSorted:
-            currentScore = scoreboardSorted[0]['score']
-        else:
-            currentScore = 0
-        
-        restartScreen(score, currentScore, names)
 
         for alien in aliens:
             alien.kill()
