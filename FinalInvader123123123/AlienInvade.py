@@ -4,17 +4,20 @@ import time
 import os
 from git import Repo
 import json
+import requests
 
 #obtain highscore from repo
-myRepo = "https://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@github.com/Grammar-Emporia/Invade"
-scriptDir = os.path.dirname(os.path.abspath(__file__))  #get current dir
-localPath = os.path.join(scriptDir, "repo")  #from that current dir point to /repo
-repo = Repo.clone_from(myRepo, localPath) if not os.path.exists(localPath) else Repo(localPath) #if path does not exist it is cloned from the repo, if it is it just uses the preexisting one
-repo.git.checkout("main")
-filePath = os.path.join(localPath, "scores.json")
-filePath2 = os.path.join(localPath, "names.json")
-repo.remotes.origin.pull() #pulls most recent version
 
+SERVER_URL = "https://website-bq9u.onrender.com"
+
+def getWebserverScores():
+    resp = requests.get(f"{SERVER_URL}/score")
+    return resp.json()
+
+    
+def postScore(player_name, score):
+    payload = {'player': player_name, 'score': score}
+    resp = requests.post(f"{SERVER_URL}/score", json=payload)
 
 pygame.init()
 pygame.font.init()
@@ -62,12 +65,17 @@ screenH = 1000
 screen = pygame.display.set_mode((screenW, screenH))
 pygame.display.set_caption('Invader')
 
-def restartScreen(score, high_score, names):
+def restartScreen(score, scoreboardList):
+
     restartRunning = True
 
     titleFont = pygame.font.SysFont('Comic Sans MS', 60)
     scoreFont = pygame.font.SysFont('Comic Sans MS', 40)
     instructionFont = pygame.font.SysFont('Comic Sans MS', 30)
+
+    scoreboardSorted = sorted(scoreboardList, key=lambda x: x['score'], reverse=True)
+
+    nameScore = [f"{entry['player']}: {entry['score']}" for entry in scoreboardSorted]
 
     while restartRunning:
         for event in pygame.event.get():
@@ -77,12 +85,6 @@ def restartScreen(score, high_score, names):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN: 
                     restartRunning = False
-
-        nameScore = []
-        for theScore in currentScore:
-            theScore = str(theScore)
-            name = names[theScore]
-            nameScore.append(f"{name}: {theScore}")
 
         screen.fill((0, 0, 0))
 
@@ -95,7 +97,7 @@ def restartScreen(score, high_score, names):
         highScoresTitle = scoreFont.render("High Scores", True, (255, 255, 0))
         screen.blit(highScoresTitle, (screenW // 2 - highScoresTitle.get_width() // 2, screenH // 3))
 
-        for i, scoreEntry in enumerate(nameScore):
+        for i, scoreEntry in enumerate(nameScore[:5]):
             scoreText = scoreFont.render(scoreEntry, True, (255, 255, 255))
             screen.blit(
                 scoreText,
@@ -566,13 +568,14 @@ superPowerUpLaser = False
 num = random.randint(1,2)
 score = int(score)
 barrIsDead = False
-with open(filePath, "r") as f: #opens current score in repo
-    currentScore = json.load(f) #looks like a list ex [200,100,20]
-    currentScore = sorted(currentScore, reverse=True)
-    currentScore = currentScore[0]
 
-with open(filePath2, "r") as f: #opens current score in repo
-    names = json.load(f) #looks like a list ex [200,100,20]
+scoreboard = getWebserverScores()
+scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
+if scoreboardSorted:
+    currentScore = scoreboardSorted[0]['score']
+else:
+    currentScore = 0
+
 while running:
 
     if not barrIsDead and not any(isinstance(sprite, Barr) for sprite in allSprites):
@@ -584,27 +587,17 @@ while running:
         #change highscore
         biggerThan = []
         score = int(score)
-        with open(filePath, "r") as f: #opens current score in repo
-            currentScore = json.load(f) #looks like a list ex [200,100,20]
-            currentScore = sorted(currentScore, reverse=True)
+        postScore(playerName, score)
 
-        with open(filePath2, "r") as f: #opens current score in repo
-            names = json.load(f)
+        scoreboard = getWebserverScores()
 
-            if score > currentScore[-1]:
-                currentScore[-1] = score
-                names[str(score)] = playerName
-                with open(filePath, "w") as f:  
-                    json.dump(currentScore, f, indent=4)
-                
-                with open(filePath2, "w") as f:  
-                    json.dump(names, f, indent=4)
+        restartScreen(score, scoreboard)
 
-                repo.git.add(filePath)
-                repo.git.add(filePath2)
-                repo.git.commit('--author="random <123@gmail.com>"','-m', 'Updated high scores')
-                repo.remote().push()
-
+        scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
+        if scoreboardSorted:
+            currentScore = scoreboard_sorted[0]['score']
+        else:
+            currentScore = 0
         
         restartScreen(score, currentScore, names)
 
