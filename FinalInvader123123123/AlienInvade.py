@@ -595,7 +595,7 @@ while running:
 
         scoreboardSorted = sorted(scoreboard, key=lambda x: x['score'], reverse=True)
         if scoreboardSorted:
-            currentScore = scoreboard_sorted[0]['score']
+            currentScore = scoreboardSorted[0]['score']
         else:
             currentScore = 0
         
